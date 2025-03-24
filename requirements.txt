@@ -6,5 +6,6 @@ optuna
 scikit-learn
 xgboost
 lightgbm
-# zenml
+zenml
+logging
 imblearn
