@@ -1,0 +1,10 @@
+columns:
+  iqr_cols: ["loan_amnt", "int_rate", "installment"]
+  quantile_cols: ['open_acc', 'revol_util', 'total_acc']
+  pt_cols: ['annual_inc', 'revol_bal', 'dti']
+
+  drop_cols: ["initial_list_status", "emp_title", "title", "earliest_cr_line", "issue_d", "grade", "sub_grade", "installment",
+              pub_rec_bankruptcies, "application_type", "address" ]
+  freq_cols: ["purpose", "home_ownership", "verification_status"]
+
+
