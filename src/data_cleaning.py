@@ -8,6 +8,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import SMOTE
 
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 class DataStrategy(ABC):
     """
     Abstract class to define strategies for data handling
@@ -42,12 +46,14 @@ class DataPreprocessStrategy(DataStrategy):
             """
             try:
                 if "emp_length" in data.columns:
-                    data['emp_length'] = data['emp_length'].str.extract('(\d+)').astype(int)
+                    data['emp_length'] = data['emp_length'].str.extract(r'(\d+)').astype(float)
                 if "term" in data.columns:
-                    data['term'] = data['term'].str.extract('(\d+)').astype(int)
+                    data['term'] = data['term'].str.extract(r'(\d+)').astype(float)
                 if "loan_status" in data.columns:
                     data['loan_status'] = data['loan_status'].map({'Fully Paid': 1, 'Charged Off': 0})
-                    return data
+                logging.info('Column values converted successfully')
+                return data
+                
             except Exception as e:
                 logging.error('Error in converting column values')
                 raise e
@@ -60,9 +66,10 @@ class DataPreprocessStrategy(DataStrategy):
             try:
                 if "mort_acc" in data.columns and data["mort_acc"].isnull().sum() > 0:
                     median = data["mort_acc"].median()
-                    data["mort_acc"].fillna(median, inplace=True)
+                    data["mort_acc"]=data["mort_acc"].fillna(median)
 
                 data.dropna(inplace=True)
+                logging.info('Missing values handled successfully')
                 return data
             
             except Exception as e:
@@ -97,7 +104,7 @@ class DataPreprocessStrategy(DataStrategy):
                 pt = PowerTransformer(method='yeo-johnson')
                 for col in cols:
                     data[col] = pt.fit_transform(data[[col]])
-
+                logging.info('Outliers handled successfully')
                 return data
             
             except Exception as e:
@@ -111,9 +118,10 @@ class DataPreprocessStrategy(DataStrategy):
             try:
                 data.drop(columns=self.config["columns"].get("drop_cols",[]), inplace=True)
                 
-                index_to_drop = data[data['home_ownership'].isin(['ANY', 'NONE'])].index
+                index_to_drop = data[data['home_ownership'].isin(['ANY', 'NONE', 'OTHER'])].index
                 data = data.drop(index_to_drop)
-            
+
+                logging.info('Columns dropped successfully')
                 return data
             
             except Exception as e:
@@ -129,6 +137,8 @@ class DataPreprocessStrategy(DataStrategy):
                 for col in cols:
                     freq_encoding = data[col].value_counts().to_dict()
                     data[col] = data[col].map(freq_encoding)
+
+                logging.info('Frequency encoding done successfully')
                 return data
             
             except Exception as e:
@@ -147,11 +157,13 @@ class DataDivideStrategy(DataStrategy):
 
             # Split data before standardization
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+            logging.info('Data divided successfully')
 
             # Standardize the data
             scaler = StandardScaler()
             X_train_scaled = scaler.fit_transform(X_train)  # Fit & transform on training data
             X_test_scaled = scaler.transform(X_test)  # Only transform test data (NO fitting)
+            logging.info('Data standardized successfully')
  
         except Exception as e:
             logging.error('Error in data division')
@@ -168,6 +180,7 @@ class DataBalancingStrategy(DataStrategy):
         try:
             smote = SMOTE(sampling_strategy='auto', random_state=42)
             X_train_resampled, y_train_resampled = smote.fit_resample(X_train_scaled, y_train)
+            logging.info('Data balanced successfully')
         
         except Exception as e:
             logging.error('Error in data balancing')
@@ -198,3 +211,22 @@ class DataCleaning:
             raise e
 
         
+if __name__ == "__main__":
+    import pandas as pd
+    from data_cleaning import DataCleaning, DataPreprocessStrategy
+    from core_utils.config_loader import load_config  # Assuming you have a config loader
+
+    # Load config
+    config = load_config()
+
+    # Load a sample CSV file (or your real one)
+    df = pd.read_csv(r"D:\Documents\GitHub\credit_line_eligibility\data\credit_eligibility.csv")
+
+    # Run preprocessing
+    cleaner = DataCleaning(df, DataPreprocessStrategy(config))
+    cleaned_df = cleaner.handle_data()
+
+    # Check the output
+    print("Data cleaning successful")
+    print(cleaned_df.head())
+    print(cleaned_df.shape)
