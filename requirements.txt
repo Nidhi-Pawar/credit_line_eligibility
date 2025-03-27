@@ -1,3 +1,4 @@
+python == 12.0.0
 numpy
 pandas
 seaborn
@@ -7,5 +8,6 @@ scikit-learn
 xgboost
 lightgbm
 zenml
+mlflow
 logging
 imblearn
