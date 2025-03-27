@@ -1,0 +1,10 @@
+
+model_name: "RandomForest"  
+
+optuna_sample_rows:
+  n_samples: 70000  # number of rows to sample for each trial
+
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "LoanTap_Hyperparameter_Tuning"
+
