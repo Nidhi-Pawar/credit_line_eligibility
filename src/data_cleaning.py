@@ -14,132 +14,132 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 class DataStrategy(ABC):
     """
-    Abstract class to define strategies for data handling
+    Abstract class to define strategies for df handling
 
     """
     @abstractmethod
-    def handle_data(self, data: pd.DataFrame):
+    def handle_data(self, df: pd.dfFrame):
         pass
 
 class DataPreprocessStrategy(DataStrategy):
     """
-    Abstract Class defining strategies for handling data preprocessing
+    Abstract Class defining strategies for handling df preprocessing
     
     """
     def __init__(self, config):
         self.config = config
 
-    def handle_data(self, data: pd.DataFrame) -> pd.DataFrame:
-        data = data.copy()
-        data = self.convert_column_values(data)
-        data = self.handle_missing_values(data)
-        data = self.handle_outliers(data)
-        data = self.drop_columns(data)
-        data = self.frequency_encoding(data)
+    def handle_data(self, df: pd.dfFrame) -> pd.dfFrame:
+        df = df.copy()
+        df = self.convert_column_values(df)
+        df = self.handle_missing_values(df)
+        df = self.handle_outliers(df)
+        df = self.drop_columns(df)
+        df = self.frequency_encoding(df)
 
-        return data
+        return df
 
-    def convert_column_values(self, data):
+    def convert_column_values(self, df):
             """
-            Convert column values to appropriate data types
+            Convert column values to appropriate df types
 
             """
             try:
-                if "emp_length" in data.columns:
-                    data['emp_length'] = data['emp_length'].str.extract(r'(\d+)').astype(float)
-                if "term" in data.columns:
-                    data['term'] = data['term'].str.extract(r'(\d+)').astype(float)
-                if "loan_status" in data.columns:
-                    data['loan_status'] = data['loan_status'].map({'Fully Paid': 1, 'Charged Off': 0})
+                if "emp_length" in df.columns:
+                    df['emp_length'] = df['emp_length'].str.extract(r'(\d+)').astype(float)
+                if "term" in df.columns:
+                    df['term'] = df['term'].str.extract(r'(\d+)').astype(float)
+                if "loan_status" in df.columns:
+                    df['loan_status'] = df['loan_status'].map({'Fully Paid': 1, 'Charged Off': 0})
                 logging.info('Column values converted successfully')
-                return data
+                return df
                 
             except Exception as e:
                 logging.error('Error in converting column values')
                 raise e
         
-    def handle_missing_values(self, data):
+    def handle_missing_values(self, df):
             """
-            Handle missing values in the data
+            Handle missing values in the df
 
             """
             try:
-                if "mort_acc" in data.columns and data["mort_acc"].isnull().sum() > 0:
-                    median = data["mort_acc"].median()
-                    data["mort_acc"]=data["mort_acc"].fillna(median)
+                if "mort_acc" in df.columns and df["mort_acc"].isnull().sum() > 0:
+                    median = df["mort_acc"].median()
+                    df["mort_acc"]=df["mort_acc"].fillna(median)
 
-                data.dropna(inplace=True)
+                df.dropna(inplace=True)
                 logging.info('Missing values handled successfully')
-                return data
+                return df
             
             except Exception as e:
                 logging.error('Error in handling missing values')
                 raise e
             
-    def handle_outliers(self, data):
+    def handle_outliers(self, df):
             """
-            Handle outliers in the data
+            Handle outliers in the df
             """
             try:
                 # Handling outliers using IQR method
                 cols = self.config["columns"].get("iqr_cols",[])
-                mask = pd.Series(True, index=data.index)
+                mask = pd.Series(True, index=df.index)
 
                 for col in cols:
-                    IQR = data[col].quantile(0.75) - data[col].quantile(0.25)
-                    ll = data[col].quantile(0.25) - 1.5 * IQR
-                    ul = data[col].quantile(0.75) + 1.5 * IQR
-                    mask &= (data[col] >= ll) & (data[col] <= ul)
-                data = data[mask]
+                    IQR = df[col].quantile(0.75) - df[col].quantile(0.25)
+                    ll = df[col].quantile(0.25) - 1.5 * IQR
+                    ul = df[col].quantile(0.75) + 1.5 * IQR
+                    mask &= (df[col] >= ll) & (df[col] <= ul)
+                df = df[mask]
 
                 # Handling outliers using quantile method
                 cols = self.config["columns"].get("quantile_cols",[])
                 for col in cols:
-                    lower = data[col].quantile(0.01)  # 1st percentile
-                    upper = data[col].quantile(0.99)  # 99th percentile
-                    data = data[(data[col] >= lower) & (data[col] <= upper)]
+                    lower = df[col].quantile(0.01)  # 1st percentile
+                    upper = df[col].quantile(0.99)  # 99th percentile
+                    df = df[(df[col] >= lower) & (df[col] <= upper)]
                 
                 # Handling outliers using PowerTransformer
                 cols = self.config["columns"].get("pt_cols",[])
                 pt = PowerTransformer(method='yeo-johnson')
                 for col in cols:
-                    data[col] = pt.fit_transform(data[[col]])
+                    df[col] = pt.fit_transform(df[[col]])
                 logging.info('Outliers handled successfully')
-                return data
+                return df
             
             except Exception as e:
                 logging.error('Error in handling outliers')
                 raise e
             
-    def drop_columns(self, data):
+    def drop_columns(self, df):
             """
-            Dropping unnecessary columns from the data
+            Dropping unnecessary columns from the df
             """
             try:
-                data.drop(columns=self.config["columns"].get("drop_cols",[]), inplace=True)
+                df.drop(columns=self.config["columns"].get("drop_cols",[]), inplace=True)
                 
-                index_to_drop = data[data['home_ownership'].isin(['ANY', 'NONE', 'OTHER'])].index
-                data = data.drop(index_to_drop)
+                index_to_drop = df[df['home_ownership'].isin(['ANY', 'NONE', 'OTHER'])].index
+                df = df.drop(index_to_drop)
 
                 logging.info('Columns dropped successfully')
-                return data
+                return df
             
             except Exception as e:
                 logging.error('Error in dropping columns')
                 raise e
             
-    def frequency_encoding(self, data):
+    def frequency_encoding(self, df):
             """
             Frequency encoding for categorical columns
             """
             try:
                 cols = self.config["columns"].get("freq_cols",[])
                 for col in cols:
-                    freq_encoding = data[col].value_counts().to_dict()
-                    data[col] = data[col].map(freq_encoding)
+                    freq_encoding = df[col].value_counts().to_dict()
+                    df[col] = df[col].map(freq_encoding)
 
                 logging.info('Frequency encoding done successfully')
-                return data
+                return df
             
             except Exception as e:
                 logging.error('Error in frequency encoding')
@@ -147,86 +147,81 @@ class DataPreprocessStrategy(DataStrategy):
         
 class DataDivideStrategy(DataStrategy):
     """
-    Strategy for dividing data into training and testing sets.
+    Strategy for dividing df into training and testing sets.
     
     """
-    def handle_data(self, data:pd.DataFrame):
+    def handle_data(self, df:pd.dfFrame):
         try:
-            X = data.drop(columns=['loan_status'],axis=1)
-            y = data['loan_status']
+            X = df.drop(columns=['loan_status'],axis=1)
+            y = df['loan_status']
 
-            # Split data before standardization
+            # Split df before standardization
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-            logging.info('Data divided successfully')
+            logging.info('df divided successfully')
 
-            # Standardize the data
+            # Standardize the df
             scaler = StandardScaler()
-            X_train_scaled = scaler.fit_transform(X_train)  # Fit & transform on training data
-            X_test_scaled = scaler.transform(X_test)  # Only transform test data (NO fitting)
-            logging.info('Data standardized successfully')
+            X_train_scaled = scaler.fit_transform(X_train)  # Fit & transform on training df
+            X_test_scaled = scaler.transform(X_test)  # Only transform test df (NO fitting)
+            logging.info('df standardized successfully')
  
         except Exception as e:
-            logging.error('Error in data division')
+            logging.error('Error in df division')
             raise e
         
         return X_train_scaled, y_train, X_test_scaled, y_test
         
 class DataBalancingStrategy(DataStrategy):
     """
-    Strategy for balancing the data
+    Strategy for balancing the df
     
     """
-    def handle_data(self, X_train_scaled, y_train):
+    def handle_data(self, X_train_scaled, y_train, X_test_scaled, y_test):
         try:
             smote = SMOTE(sampling_strategy='auto', random_state=42)
             X_train_resampled, y_train_resampled = smote.fit_resample(X_train_scaled, y_train)
-            logging.info('Data balanced successfully')
+            logging.info('df balanced successfully')
         
         except Exception as e:
-            logging.error('Error in data balancing')
+            logging.error('Error in df balancing')
             raise e 
         
-        return X_train_resampled, y_train_resampled
+        return X_train_resampled, X_test_scaled, y_train_resampled, y_test
         
 
-class DataCleaning:
+class dfCleaning:
     """
-    Class to clean the data using the strategy pattern
+    Class to clean the df using the strategy pattern
 
     """
-    def __init__(self,data:pd.DataFrame, data_strategy:DataStrategy):
-        self.data = data
-        self.data_strategy = data_strategy
+    def __init__(self,df:pd.dfFrame, df_strategy:DataStrategy):
+        self.df = df
+        self.df_strategy = df_strategy
 
     def handle_data(self):
         """
-        Handles data using the strategy patterns
+        Handles df using the strategy patterns
         
         """
         try:
-            return self.data_strategy.handle_data(self.data)
+            return self.df_strategy.handle_data(self.df)
         
         except Exception as e:
-            logging.error("Error in handling data:{}".format(e))
+            logging.error("Error in handling df:{}".format(e))
             raise e
 
         
-if __name__ == "__main__":
-    import pandas as pd
-    from data_cleaning import DataCleaning, DataPreprocessStrategy
-    from core_utils.config_loader import load_config  # Assuming you have a config loader
+# if __name__ == "__main__":
+#     import pandas as pd
+#     from df_cleaning import dfCleaning, dfPreprocessStrategy
+#     from core_utils.config_loader import load_config 
 
-    # Load config
-    config = load_config()
+#     config = load_config()
 
-    # Load a sample CSV file (or your real one)
-    df = pd.read_csv(r"D:\Documents\GitHub\credit_line_eligibility\data\credit_eligibility.csv")
+#     df = pd.read_csv(r"D:\Documents\GitHub\credit_line_eligibility\df\credit_eligibility.csv")
+#     cleaner = dfCleaning(df, dfPreprocessStrategy(config))
+#     cleaned_df = cleaner.handle_data()
 
-    # Run preprocessing
-    cleaner = DataCleaning(df, DataPreprocessStrategy(config))
-    cleaned_df = cleaner.handle_data()
-
-    # Check the output
-    print("Data cleaning successful")
-    print(cleaned_df.head())
-    print(cleaned_df.shape)
+#     print("df cleaning successful")
+#     print(cleaned_df.head())
+#     print(cleaned_df.shape)
