@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import PowerTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from imblearn.over_sampling import SMOTE
+from src.core_utils import config_loader
 
 import logging
 
@@ -18,7 +18,7 @@ class DataStrategy(ABC):
 
     """
     @abstractmethod
-    def handle_data(self, df: pd.dfFrame):
+    def handle_data(self, df: pd.DataFrame):
         pass
 
 class DataPreprocessStrategy(DataStrategy):
@@ -26,10 +26,10 @@ class DataPreprocessStrategy(DataStrategy):
     Abstract Class defining strategies for handling df preprocessing
     
     """
-    def __init__(self, config):
+    def __init__(self, config: config_loader):
         self.config = config
 
-    def handle_data(self, df: pd.dfFrame) -> pd.dfFrame:
+    def handle_data(self, df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df = self.convert_column_values(df)
         df = self.handle_missing_values(df)
@@ -41,7 +41,7 @@ class DataPreprocessStrategy(DataStrategy):
 
     def convert_column_values(self, df):
             """
-            Convert column values to appropriate df types
+            Converts column values to appropriate data types
 
             """
             try:
@@ -51,7 +51,11 @@ class DataPreprocessStrategy(DataStrategy):
                     df['term'] = df['term'].str.extract(r'(\d+)').astype(float)
                 if "loan_status" in df.columns:
                     df['loan_status'] = df['loan_status'].map({'Fully Paid': 1, 'Charged Off': 0})
-                logging.info('Column values converted successfully')
+
+                top_3_purposes = ['debt_consolidation', 'credit_card', 'home_improvement']
+                df['purpose']=df['purpose'].apply(lambda x: x if x in top_3_purposes else 'others')
+
+                logging.info('Column values processed successfully')
                 return df
                 
             except Exception as e:
@@ -150,7 +154,7 @@ class DataDivideStrategy(DataStrategy):
     Strategy for dividing df into training and testing sets.
     
     """
-    def handle_data(self, df:pd.dfFrame):
+    def handle_data(self, df:pd.DataFrame):
         try:
             X = df.drop(columns=['loan_status'],axis=1)
             y = df['loan_status']
@@ -171,30 +175,13 @@ class DataDivideStrategy(DataStrategy):
         
         return X_train_scaled, y_train, X_test_scaled, y_test
         
-class DataBalancingStrategy(DataStrategy):
-    """
-    Strategy for balancing the df
-    
-    """
-    def handle_data(self, X_train_scaled, y_train, X_test_scaled, y_test):
-        try:
-            smote = SMOTE(sampling_strategy='auto', random_state=42)
-            X_train_resampled, y_train_resampled = smote.fit_resample(X_train_scaled, y_train)
-            logging.info('df balanced successfully')
-        
-        except Exception as e:
-            logging.error('Error in df balancing')
-            raise e 
-        
-        return X_train_resampled, X_test_scaled, y_train_resampled, y_test
-        
 
-class dfCleaning:
+class DataCleaning:
     """
     Class to clean the df using the strategy pattern
 
     """
-    def __init__(self,df:pd.dfFrame, df_strategy:DataStrategy):
+    def __init__(self, df:pd.DataFrame, df_strategy:DataStrategy):
         self.df = df
         self.df_strategy = df_strategy
 
@@ -209,17 +196,19 @@ class dfCleaning:
         except Exception as e:
             logging.error("Error in handling df:{}".format(e))
             raise e
+        
+
 
         
 # if __name__ == "__main__":
 #     import pandas as pd
-#     from df_cleaning import dfCleaning, dfPreprocessStrategy
+#     from data_cleaning import DataCleaning, DataPreprocessStrategy
 #     from core_utils.config_loader import load_config 
 
 #     config = load_config()
 
 #     df = pd.read_csv(r"D:\Documents\GitHub\credit_line_eligibility\df\credit_eligibility.csv")
-#     cleaner = dfCleaning(df, dfPreprocessStrategy(config))
+#     cleaner = DataCleaning(df, DataPreprocessStrategy(config))
 #     cleaned_df = cleaner.handle_data()
 
 #     print("df cleaning successful")
