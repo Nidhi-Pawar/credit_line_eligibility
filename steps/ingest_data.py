@@ -19,17 +19,13 @@ class IngestData:
         """
         logging.info(f"Ingesting data from {self.data_path}")
         try:
-            # Convert to Path object for better path handling
             path = Path(self.data_path)
-            
-            # Verify file exists and is accessible
             if not path.exists():
                 raise FileNotFoundError(f"Data file not found at {path.absolute()}")
             if not os.access(path, os.R_OK):
                 raise PermissionError(f"No read permissions for file {path.absolute()}")
-                
-            # Try reading the file
             return pd.read_csv(path)
+        
         except pd.errors.EmptyDataError:
             logging.error("The CSV file is empty")
             raise
@@ -49,7 +45,7 @@ def ingest_data(data_path: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: The data as a pandas DataFrame.
             
-        """
+    """
     
     try:
         logging.info(f"Starting data ingestion from {data_path}")
@@ -57,6 +53,7 @@ def ingest_data(data_path: str) -> pd.DataFrame:
         data = ingest_data_step.get_data()
         logging.info(f"Successfully ingested data with shape {data.shape}")
         return data
+    
     except Exception as e:
         logging.error(f"Error ingesting data: {e}")
         raise e
