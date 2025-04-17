@@ -23,7 +23,7 @@ class XGBoost(Model):
         
         """        
         try:
-            xgbmodel = XGBClassifier(**kwargs, eval_metric='logloss', scale_pos_weight=0.24, objective="binary:logistic", tree_method='gpu_hist')
+            xgbmodel = XGBClassifier(**kwargs, eval_metric='logloss', scale_pos_weight=0.2334, verbosity=0)
             xgb = xgbmodel.fit(X_train, y_train)
             logging.info("XGBoost model trained successfully")
             return xgb
@@ -40,7 +40,7 @@ class XGBoost(Model):
 
         """
         try:
-            xgbmodel = XGBClassifier(**kwargs, eval_metric='logloss', scale_pos_weight=0.24, objective="binary:logistic", tree_method='gpu_hist')
+            xgbmodel = XGBClassifier(**kwargs, eval_metric='logloss', scale_pos_weight=0.2334, verbosity=0)
             xgb = xgbmodel.fit(X_train, y_train)
             # logging.info("XGBoost model trained successfully")
             return xgb
@@ -65,16 +65,14 @@ class XGBoost(Model):
         """
         X_train, X_valid, y_train, y_valid = super().optimize(trial, X_train, y_train)
         params = {
-            # "objective": "binary:logistic",
-            # "tree_method": "gpu_hist",  
-            "verbosity":0,
-            "verbose":-1,
+            "objective": "binary:logistic",
+            "tree_method": "gpu_hist",  
             "n_estimators": trial.suggest_int("n_estimators", 100, 500, step=50),
             "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
             "max_depth": trial.suggest_int("max_depth", 5, 10),
             "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
             "gamma": trial.suggest_float("gamma", 1e-3, 1.0),
-            "subsample": trial.suggest_uniform("subsample", 0.5, 1.0),
+            "subsample": trial.suggest_float("subsample", 0.5, 1.0),
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
             "lambda": trial.suggest_float("lambda", 1e-3, 10.0),
             "alpha": trial.suggest_float("alpha", 1e-3, 10.0),
@@ -83,5 +81,5 @@ class XGBoost(Model):
     }
         
         # logging.info(f"XGBoost parameters: {params}")
-        model = self.train(X_train, y_train, **params) #, evals=[(X_valid, "validation")]
+        model = self.extratrain(X_train, y_train, **params) #, evals=[(X_valid, "validation")]
         return model.score(X_valid, y_valid)

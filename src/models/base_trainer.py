@@ -53,14 +53,12 @@ class HyperParameterTuner:
     """
     Hyperparameter tuning class for the model
     """
-    def __init__(self, model: Model, X_train, y_train, X_test, y_test):
+    def __init__(self, model: Model, X_train, y_train):
         self.model = model
         self.X_train = X_train
         self.y_train = y_train
-        self.X_test = X_test
-        self.y_test = y_test
     
-    def optimize(self, n_trials = 5):
+    def optimize(self, n_trials):
         """
         Optimize the hyperparameters of the model
         Args:
@@ -68,6 +66,7 @@ class HyperParameterTuner:
             X_train: training data
             y_train: target data
         """
+        optuna.logging.set_verbosity(optuna.logging.ERROR)
         study = optuna.create_study(direction="maximize")
         study.optimize(lambda trial: self.model.optimize(trial, self.X_train, self.y_train), n_trials = n_trials)
         return study.best_trial.params

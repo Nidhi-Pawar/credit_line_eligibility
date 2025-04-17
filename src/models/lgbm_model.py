@@ -2,6 +2,7 @@ import lightgbm as lgbm
 from lightgbm import LGBMClassifier 
 from .base_trainer import Model
 import logging
+import warnings
 
 class LightGBM(Model):
     """
@@ -22,7 +23,8 @@ class LightGBM(Model):
         
         """
         try:
-            lgbm_model = LGBMClassifier(**kwargs, objective= "binary", metric= "auc", scale_pos_weight=0.24)
+            warnings.filterwarnings("ignore", category=UserWarning)
+            lgbm_model = LGBMClassifier(**kwargs, objective= "binary", metric= "auc", scale_pos_weight=0.24, verbose=-1, verbose_eval=False)
             lgbm_model.fit(X_train, y_train)
             logging.info("LightGBM model trained successfully")
             return lgbm_model
@@ -40,7 +42,8 @@ class LightGBM(Model):
         
         """
         try:
-            lgbmodel = LGBMClassifier(**kwargs,random_state=42 )
+            warnings.filterwarnings("ignore", category=UserWarning)
+            lgbmodel = LGBMClassifier(**kwargs, objective= "binary", metric= "auc", random_state=42, verbose=-1, scale_pos_weight= 0.2334, )
             lgbmodel.fit(
                 X_train,
                 y_train,
@@ -50,8 +53,8 @@ class LightGBM(Model):
                     lgbm.early_stopping(50, verbose=False),
                     lgbm.log_evaluation(0),
                 ]
+                
             )
-            logging.info("LightGBM model trained successfully")
             return lgbmodel 
         except Exception as e:
             logging.error(f"Error training LightGBM model: {e}")
@@ -75,10 +78,7 @@ class LightGBM(Model):
         X_train, X_valid, y_train, y_valid = super().optimize(trial, X_train, y_train)
         
         params = {
-        "objective": "binary",
-        "metric": "auc",
-        "boosting_type": 'gbdt',
-        "scale_pos_weight": 0.2334,
+        "verbose_eval":False,
         "learning_rate": trial.suggest_float("learning_rate", 0.01, 0.3),
         "num_leaves": trial.suggest_int("num_leaves", 20, 400, step=20),
         "max_depth": trial.suggest_int("max_depth", 3, 15),

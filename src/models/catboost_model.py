@@ -47,7 +47,6 @@ class CatBoost(Model):
         try:
             catboost_model = CatBoostClassifier(**kwargs, eval_metric= "AUC",loss_function= "Logloss", random_seed=42, verbose=0)
             cbm = catboost_model.fit(X_train, y_train)
-            # logging.info("CatBoost Classifier model trained successfully")
             return cbm   
         except Exception as e:
             logging.error(f"Error in CatBoost: {e}")
