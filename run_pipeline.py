@@ -18,9 +18,10 @@ if __name__ == "__main__":
     mlflow.set_tracking_uri(tracking_uri)
     print(f"MLflow tracking URI set to: {tracking_uri}")
 
-    data_path = Path(__file__).parent / "data" / "credit_eligibility.csv"
+    data_path = Path(__file__).parent / "data" / "credit_risk_predictor.csv"
     abs_path = data_path.absolute()
     if not abs_path.exists():
         raise FileNotFoundError(f"Data file not found at {abs_path}")
     train_pipeline(data_path=str(abs_path))
+
 
