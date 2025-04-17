@@ -125,7 +125,9 @@ Thanks to the open-source tools and the data providers who made this analysis po
 ## 🔗 Connect With Me
 
 Feel free to reach out if you'd like to chat about ML, this project, or anything tech-related!
+
 💼 linkedin.com/in/nidhipawar810 
+
 📫 nidhipawar.810@gmail.com
 
 
