@@ -6,5 +6,4 @@ columns:
               "pub_rec_bankruptcies", "application_type", "address"]
   freq_cols: ["purpose", "home_ownership", "verification_status"]
 
-# optuna_sample_rows:
-#   n_samples: 70000 
+

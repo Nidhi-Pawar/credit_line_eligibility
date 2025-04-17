@@ -16,8 +16,6 @@ from sklearn.metrics import (
 import os
 from steps.config import ModelNameConfig
 
-if mlflow.active_run() is not None:
-    mlflow.end_run()
 
 def evaluate_model(y_true, y_pred, y_prob, model_name: str):
     """
@@ -64,11 +62,6 @@ def evaluate_model(y_true, y_pred, y_prob, model_name: str):
     mlflow.log_artifact(report_path)
 
 
-    # Confusion Matrix
-    # cm = confusion_matrix(y_true, y_pred)
-    # fig1 = plot_confusion_matrix(cm, model_name)
-    # mlflow.log_artifact(fig1, "confusion_matrix.png")
-
     # ROC Curve
     fpr, tpr, _ = roc_curve(y_true, y_prob)
     fig2 = plot_roc_curve(fpr, tpr, model_name)
@@ -76,23 +69,12 @@ def evaluate_model(y_true, y_pred, y_prob, model_name: str):
     plt.close(fig2)
 
     # PR Curve
-    # precision_vals, recall_vals, _ = precision_recall_curve(y_true, y_prob)
-    # fig3 = plot_pr_curve(precision_vals, recall_vals, model_name)
-    # mlflow.log_figure(fig3, "pr_curve.png")
+    precision_vals, recall_vals, _ = precision_recall_curve(y_true, y_prob)
+    fig3 = plot_pr_curve(precision_vals, recall_vals, model_name)
+    mlflow.log_figure(fig3, "pr_curve.png")
+    plt.close(fig3)
 
     return accuracy, precision, recall, f1, auc, report
-
-def plot_confusion_matrix(cm, model_name):
-    plt.figure(figsize=(6, 4))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues")
-    plt.title(f"{model_name} - Confusion Matrix")
-    plt.xlabel("Predicted")
-    plt.ylabel("Actual")
-    path = f"{model_name}_confusion_matrix.png"
-    plt.savefig(path)
-    mlflow.log_artifact(path)
-    plt.close()
-    os.remove(path)
 
 
 def plot_roc_curve(fpr, tpr, model_name):
@@ -107,15 +89,11 @@ def plot_roc_curve(fpr, tpr, model_name):
 
 
 def plot_pr_curve(precision, recall, model_name):
-    plt.figure()
+    fig = plt.figure()
     plt.plot(recall, precision, label=f"{model_name}")
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.title(f"{model_name} - Precision-Recall Curve")
     plt.legend()
-    path = f"{model_name}_pr_curve.png"
-    plt.savefig(path)
-    mlflow.log_artifact(path)
-    plt.close()
-    os.remove(path)
+    return fig
 
