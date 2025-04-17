@@ -1,5 +1,6 @@
 # 🏦 Credit Risk Predictor
 ---
+This project is a machine learning-based solution for assessing the credit risk of individuals applying for loans. By analyzing customer attributes, the model predicts whether an applicant is likely to default on their loan — enabling more informed and responsible lending decisions.
 
 ## 🚀 Project Highlights
 
