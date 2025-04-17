@@ -77,7 +77,7 @@ credit_line_eligibility
 │       __init__.py
 │
 ├───requirements.txt
-├───run_pipeline.py        
+└───run_pipeline.py        
         
 ```
 ---
@@ -115,12 +115,12 @@ credit_line_eligibility
 - Add model deployment using Streamlit or Flask
 - Set up Docker + CI/CD pipeline for full reproducibility
 
--- 
+--- 
 ## 🙌 Acknowledgements
 
 Thanks to the open-source tools and the data providers who made this analysis possible! As well as countless articles and research papers on Data Imbalance Handling, and Stack Exchange!
 
--- 
+--- 
 ## 🔗 Connect With Me
 
 Feel free to reach out if you'd like to chat about ML, this project, or anything tech-related!
