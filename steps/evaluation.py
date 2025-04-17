@@ -5,7 +5,7 @@ from zenml.steps import step
 from zenml.client import Client
 import mlflow
 
-from src.model_evaluation import evaluate_model, plot_confusion_matrix, plot_pr_curve, plot_roc_curve
+from src.model_evaluation import evaluate_model
 from sklearn.base import ClassifierMixin
 from .config import ModelNameConfig
 
@@ -25,8 +25,6 @@ def evaluation(model:ClassifierMixin,
         df (pd.DataFrame): the ingested data
     """
     try:
-       if mlflow.active_run() is not None:
-        mlflow.end_run()
 
         y_pred = model.predict(X_test)
         y_prob = model.predict_proba(X_test)[:, 1] 
