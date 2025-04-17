@@ -24,11 +24,3 @@ if __name__ == "__main__":
         raise FileNotFoundError(f"Data file not found at {abs_path}")
     train_pipeline(data_path=str(abs_path))
 
-
-# zenml experiment-tracker register mlflow_credit_tracker --flavor=mlflow
-# zenml model-deployer register credit_mlflow --flavor=mlflow
-# zenml stack register mlflow_credit_stack -a default -o default -d credit_mlflow -e mlflow_credit_tracker --set
-
-# mlflow ui --backend-store-uri "__"
-
-#zenml stack delete -y mlflow_credit3_stack
