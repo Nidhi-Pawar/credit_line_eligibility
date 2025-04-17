@@ -1,4 +1,4 @@
-# 🏦 Credit Line Eligibility
+# 🏦 Credit Risk Predictor
 ---
 
 ## 🚀 Project Highlights
@@ -37,7 +37,7 @@
 ## 📁 Project Structure
 
 ```
-credit_line_eligibility
+credit_risk_predictor
 │
 ├───data
 │       cleaned_data.csv
